@@ -369,6 +369,8 @@ def find_useless_filters_data_version(net,
 
 
 def check_ReLU_alive(net,neural_dead_times,data=None,data_loader=None):
+    # 传入data则用生成数据作为输入
+    # 传入data_loader就用真实数据
     handle = list()
     global relu_list                                                        #list containing relu module
     global neural_list
@@ -436,10 +438,12 @@ def check_conv_alive_layerwise(net,neural_dead_times,batch_size):
             conv_list.append(mod)
             new_block=True
             handle.append(mod.register_forward_hook(record_input_output_size))
+            # 记录输入输出feature map的大小
         if isinstance(mod,torch.nn.ReLU):
             new_block=False
         if isinstance(mod,torch.nn.BatchNorm2d):
             handle.append(mod.register_forward_hook(record_mean_std_layerwise))
+            # 记录Bn的数据，记录的是mean和std
     num_conv+=1
 
     data=generate_random_data.random_normal(num=1,dataset_name='cifar10')
@@ -451,12 +455,13 @@ def check_conv_alive_layerwise(net,neural_dead_times,batch_size):
         h.remove()
 
     for i in range(num_conv):
+        # 对于每一个卷积层，生成随机数据
         if i == 0:
             data_foward=generate_random_data.random_normal(num=batch_size,size=input_shape_list[i],mean=mean_list[i],std=std_list[i],is_image=True)
         else:
             data_foward=generate_random_data.random_normal(num=batch_size,size=input_shape_list[i],mean=mean_list[i],std=std_list[i],is_image=False)
 
-        for mod in module_block_list[i]:
+        for mod in module_block_list[i]:  # module_block_list包含了conv bn reLU
             data_foward=mod(data_foward)
         cal_dead_times(module=conv_list[i],input=None,output=data_foward)
 
