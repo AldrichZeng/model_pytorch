@@ -22,6 +22,7 @@ def random_normal(num,dataset_name=None,size=[3,32,32],mean=[0.485, 0.456, 0.406
     :param mean:mean of normal distribution
     :param std:std of normal distribution
     :return:
+    out -  神经网络的输入 4维张量（既可以做神经网络的输入，也可以做某一个Conv的输入）
     '''
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -31,6 +32,7 @@ def random_normal(num,dataset_name=None,size=[3,32,32],mean=[0.485, 0.456, 0.406
         size=[3,224,224]
 
     def one_tensor(is_image):
+        # 将像素值拉到0-1之间
         simulated_tensor = np.random.normal(loc=mean, scale=std, size=(size[1],size[2],size[0]))   #generate data
         if is_image is True:
             while simulated_tensor.max() >= 1 or simulated_tensor.min() < 0:            #ensure all data are in range[0,1]
